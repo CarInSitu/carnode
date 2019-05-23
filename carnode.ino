@@ -2,6 +2,12 @@
 #include <WiFiUdp.h>
 #include <Servo.h>
 
+#define VERSION_MAJOR 0
+#define VERSION_MINOR 1
+#define VERSION_PATCH 0
+
+#define NODE_TYPE_CAR 0
+
 // WiFi access point connection configuration
 const char* ssid = "CarInSitu";
 const char* password =  "Roulez jeunesse !";
@@ -16,7 +22,7 @@ byte mac[6];
 WiFiUDP Udp;
 unsigned int localUdpPort = 4210;
 char incomingPacket[256];
-char replyPacket[] = "Hi there! Got the message :-)";
+char outgoingPacket[256];
  
 void setup() {
   // Init serial monitoring
@@ -79,6 +85,17 @@ void processIncomingPackets(const int len)
     int16_t* int_value = (int16_t*)&incomingPacket[1];
     int value;
     switch(incomingPacket[0]) {
+      case 0x01: // Discovery request
+        Udp.beginPacket(Udp.remoteIP(), 4200);
+        outgoingPacket[0] = 0x01; // repeat command code
+        outgoingPacket[1] = NODE_TYPE_CAR; // says im a car node
+        outgoingPacket[2] = VERSION_MAJOR; // says my firmware version
+        outgoingPacket[3] = VERSION_MINOR;
+        outgoingPacket[4] = VERSION_PATCH;
+        Udp.write(outgoingPacket, 5);
+        Udp.endPacket();
+        Serial.printf("Replied to DISCOVERY request to %s\n", Udp.remoteIP().toString().c_str());
+        break;
       case 0x10: // Steering (inverted)
         value = map(*int_value, -32768, 32767, 2000, 1000);
         steeringServo.writeMicroseconds(value);
