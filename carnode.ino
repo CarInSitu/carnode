@@ -2,7 +2,7 @@
 #include <WiFiUdp.h>
 #include <Servo.h>
 
-// Wifi acces point connection configuration
+// WiFi access point connection configuration
 const char* ssid = "CarInSitu";
 const char* password =  "Roulez jeunesse !";
 
@@ -10,27 +10,27 @@ const char* password =  "Roulez jeunesse !";
 Servo steeringServo;
 Servo throttleServo;
 
-byte mac[6];                     // the MAC address of your Wifi shield
+// Network
+byte mac[6];
 
-// Init wifi server 
 WiFiUDP Udp;
 unsigned int localUdpPort = 4210;
 char incomingPacket[256];
 char replyPacket[] = "Hi there! Got the message :-)";
  
 void setup() {
-
   // Init serial monitoring
   Serial.begin(115200);
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
   delay(10);
 
+  // Init WiFi
   WiFi.disconnect();
   delay(10);
 
   WiFi.macAddress(mac);
-  // Start wifi server and wait for connection
+  // Start WiFi server and wait for connection
   String hostname = String("CarNode-")
     + String(mac[5],HEX)
     + String(mac[4],HEX)
@@ -58,7 +58,6 @@ void setup() {
   steeringServo.writeMicroseconds(1500);
   throttleServo.writeMicroseconds(1500);
   
-  //wifiServer.begin();
   Udp.begin(localUdpPort);
   Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
 }
@@ -88,11 +87,4 @@ void loop() {
         throttleServo.writeMicroseconds(value);
         break;
     }
-    Serial.printf("UDP packet contents: %s\n", incomingPacket);
-
-    // send back a reply, to the IP address and port we got the packet from
-    Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-    Udp.write(replyPacket);
-    Udp.endPacket();
-  }
 }
