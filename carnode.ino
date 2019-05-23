@@ -69,20 +69,21 @@ void loop() {
     // receive incoming UDP packets
     Serial.printf("Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
     int len = Udp.read(incomingPacket, 255);
-    if (len > 0)
-    {
-      incomingPacket[len] = 0;
-    }
+    // Serial.printf("UDP packet contents: %s\n", incomingPacket);
+    processIncomingPackets(len);
+  }
+}
+
+void processIncomingPackets(const int len)
+{
     int16_t* int_value = (int16_t*)&incomingPacket[1];
     int value;
     switch(incomingPacket[0]) {
-      case 0x10:
-        //steering (invert)
+      case 0x10: // Steering (inverted)
         value = map(*int_value, -32768, 32767, 2000, 1000);
         steeringServo.writeMicroseconds(value);
         break;
-      case 0x11:
-        //throttle+
+      case 0x11: // Throttle
         value = map(*int_value, -32768, 32767, 1000, 2000);
         throttleServo.writeMicroseconds(value);
         break;
