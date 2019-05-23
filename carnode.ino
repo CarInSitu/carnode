@@ -9,7 +9,9 @@ const char* password =  "Roulez jeunesse !";
 // Servo for steering and throttle
 Servo steeringServo;
 Servo throttleServo;
- 
+
+byte mac[6];                     // the MAC address of your Wifi shield
+
 // Init wifi server 
 WiFiUDP Udp;
 unsigned int localUdpPort = 4210;
@@ -27,8 +29,16 @@ void setup() {
   WiFi.disconnect();
   delay(10);
 
+  WiFi.macAddress(mac);
   // Start wifi server and wait for connection
-  WiFi.hostname("RC_Car_1");
+  String hostname = String("CarNode-")
+    + String(mac[5],HEX)
+    + String(mac[4],HEX)
+    + String(mac[3],HEX)
+    + String(mac[2],HEX)
+    + String(mac[1],HEX)
+    + String(mac[0],HEX);
+  WiFi.hostname(hostname);
   WiFi.begin(ssid, password);
   Serial.printf("Hostname set to: %s\n", WiFi.hostname().c_str());
  
