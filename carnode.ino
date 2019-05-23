@@ -4,7 +4,7 @@
 
 // Wifi acces point connection configuration
 const char* ssid = "CarInSitu";
-const char* password =  "roulez jeunesse !";
+const char* password =  "Roulez jeunesse !";
 
 // Servo for steering and throttle
 Servo steeringServo;
