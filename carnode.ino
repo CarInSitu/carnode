@@ -73,11 +73,15 @@ void loop() {
   }
 }
 
+#define DISCOVERY_REQUEST 0x01
+#define STEERING 0x10
+#define THROTTLE 0x11
+
 void processIncomingPackets(const int len) {
   int16_t* int_value = (int16_t*)&incomingPacket[1];
   int value;
   switch (incomingPacket[0]) {
-  case 0x01: // Discovery request
+  case DISCOVERY_REQUEST:
     Udp.beginPacket(Udp.remoteIP(), 4200);
     outgoingPacket[0] = 0x01;          // repeat command code
     outgoingPacket[1] = NODE_TYPE_CAR; // says im a car node
@@ -88,11 +92,11 @@ void processIncomingPackets(const int len) {
     Udp.endPacket();
     Serial.printf("Replied to DISCOVERY request to %s\n", Udp.remoteIP().toString().c_str());
     break;
-  case 0x10: // Steering (inverted)
+  case STEERING:
     value = map(*int_value, -32768, 32767, 2000, 1000);
     steeringServo.writeMicroseconds(value);
     break;
-  case 0x11: // Throttle
+  case THROTTLE:
     value = map(*int_value, -32768, 32767, 1000, 2000);
     throttleServo.writeMicroseconds(value);
     break;
