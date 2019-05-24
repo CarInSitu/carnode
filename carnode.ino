@@ -3,7 +3,7 @@
 #include <Servo.h>
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 1
+#define VERSION_MINOR 2
 #define VERSION_PATCH 0
 
 #define NODE_TYPE_CAR 0
@@ -23,6 +23,10 @@ WiFiUDP Udp;
 unsigned int localUdpPort = 4210;
 char incomingPacket[256];
 char outgoingPacket[256];
+
+int steeringLimitLeft;
+int steeringLimitRight;
+int steeringTrim = 0;
 
 void setup() {
   // Init serial monitoring
@@ -58,6 +62,8 @@ void setup() {
   steeringServo.writeMicroseconds(1500);
   throttleServo.writeMicroseconds(1500);
 
+  computeSteeringLimits();
+
   Udp.begin(localUdpPort);
   Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
 }
@@ -73,9 +79,18 @@ void loop() {
   }
 }
 
+void computeSteeringLimits() {
+  steeringLimitLeft = 2000 - steeringTrim;
+  steeringLimitRight = 1000 - steeringTrim;
+
+  int center = map(0, -32768, 32767, steeringLimitLeft, steeringLimitRight);
+  Serial.printf("Steering center is now at %d, left limit at%d, right limit at %d\n", center, steeringLimitLeft, steeringLimitRight);
+}
+
 #define DISCOVERY_REQUEST 0x01
 #define STEERING 0x10
 #define THROTTLE 0x11
+#define TRIM_STEERING 0x20
 
 void processIncomingPackets(const int len) {
   int16_t* int_value = (int16_t*)&incomingPacket[1];
@@ -93,12 +108,17 @@ void processIncomingPackets(const int len) {
     Serial.printf("Replied to DISCOVERY request to %s\n", Udp.remoteIP().toString().c_str());
     break;
   case STEERING:
-    value = map(*int_value, -32768, 32767, 2000, 1000);
+    value = map(*int_value, -32768, 32767, steeringLimitLeft, steeringLimitRight);
     steeringServo.writeMicroseconds(value);
     break;
   case THROTTLE:
     value = map(*int_value, -32768, 32767, 1000, 2000);
     throttleServo.writeMicroseconds(value);
+    break;
+  case TRIM_STEERING:
+    int8_t* int8_value = (int8_t*)&incomingPacket[1];
+    steeringTrim = *int8_value;
+    computeSteeringLimits();
     break;
   }
 }
