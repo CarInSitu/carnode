@@ -44,16 +44,14 @@ void setup() {
   String hostname = String("CarNode-") + String(mac[5], HEX) + String(mac[4], HEX) + String(mac[3], HEX) + String(mac[2], HEX) + String(mac[1], HEX) + String(mac[0], HEX);
   WiFi.hostname(hostname);
   WiFi.begin(ssid, password);
-  Serial.printf("Hostname set to: %s\n", WiFi.hostname().c_str());
+  Serial.printf("\nHostname set to: %s\n", WiFi.hostname().c_str());
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(2000);
-    Serial.println("Connecting..");
-    Serial.println(WiFi.status());
+    Serial.printf("WiFi: Connecting... (status: %d)\n", WiFi.status());
   }
   digitalWrite(LED_BUILTIN, LOW);
-  Serial.print("Connected to WiFi. IP:");
-  Serial.println(WiFi.localIP());
+  Serial.printf("WiFi: Connected to SSID: \"%s\" with IP: %s\n", ssid, WiFi.localIP().toString().c_str());
 
   //Init servos
   steeringServo.attach(5); // D1
@@ -65,14 +63,14 @@ void setup() {
   computeSteeringLimits();
 
   Udp.begin(localUdpPort);
-  Serial.printf("Now listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
+  Serial.printf("UDP: Listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
 }
 
 void loop() {
   int packetSize = Udp.parsePacket();
   if (packetSize) {
     // receive incoming UDP packets
-    Serial.printf("Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
+    Serial.printf("UDP: Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
     int len = Udp.read(incomingPacket, 255);
     // Serial.printf("UDP packet contents: %s\n", incomingPacket);
     processIncomingPackets(len);
@@ -84,7 +82,7 @@ void computeSteeringLimits() {
   steeringLimitRight = 1000 - steeringTrim;
 
   int center = map(0, -32768, 32767, steeringLimitLeft, steeringLimitRight);
-  Serial.printf("Steering center is now at %d, left limit at%d, right limit at %d\n", center, steeringLimitLeft, steeringLimitRight);
+  Serial.printf("Config: Steering center is now at %d, left limit at %d, right limit at %d\n", center, steeringLimitLeft, steeringLimitRight);
 }
 
 #define DISCOVERY_REQUEST 0x01
