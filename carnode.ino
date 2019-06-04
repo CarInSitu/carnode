@@ -3,7 +3,7 @@
 #include <Servo.h>
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 2
+#define VERSION_MINOR 3
 #define VERSION_PATCH 0
 
 #define NODE_TYPE_CAR 0
@@ -23,6 +23,7 @@ WiFiUDP Udp;
 unsigned int localUdpPort = 4210;
 char incomingPacket[256];
 char outgoingPacket[256];
+IPAddress cisServerIpAddress;
 
 int steeringLimitLeft;
 int steeringLimitRight;
@@ -75,6 +76,11 @@ void loop() {
     // Serial.printf("UDP packet contents: %s\n", incomingPacket);
     processIncomingPackets(len);
   }
+  sendSensorsData();
+
+  // Give some CPU to process internal things...
+  // UDP is instable without this...
+  yield();
 }
 
 void computeSteeringLimits() {
@@ -95,15 +101,14 @@ void processIncomingPackets(const int len) {
   int value;
   switch (incomingPacket[0]) {
   case DISCOVERY_REQUEST:
-    Udp.beginPacket(Udp.remoteIP(), 4200);
-    outgoingPacket[0] = 0x01;          // repeat command code
-    outgoingPacket[1] = NODE_TYPE_CAR; // says im a car node
-    outgoingPacket[2] = VERSION_MAJOR; // says my firmware version
+    cisServerIpAddress = Udp.remoteIP();
+    outgoingPacket[0] = DISCOVERY_REQUEST; // repeat command code
+    outgoingPacket[1] = NODE_TYPE_CAR;     // says im a car node
+    outgoingPacket[2] = VERSION_MAJOR;     // says my firmware version
     outgoingPacket[3] = VERSION_MINOR;
     outgoingPacket[4] = VERSION_PATCH;
-    Udp.write(outgoingPacket, 5);
-    Udp.endPacket();
-    Serial.printf("Replied to DISCOVERY request to %s\n", Udp.remoteIP().toString().c_str());
+    sendUdpPacket(5);
+    Serial.printf("Replied to DISCOVERY request to CIS server: %s\n", cisServerIpAddress.toString().c_str());
     break;
   case STEERING:
     value = map(*int_value, -32768, 32767, steeringLimitLeft, steeringLimitRight);
@@ -119,4 +124,31 @@ void processIncomingPackets(const int len) {
     computeSteeringLimits();
     break;
   }
+}
+
+void sendUdpPacket(const int len) {
+  Udp.beginPacket(cisServerIpAddress, 4200);
+  Udp.write(outgoingPacket, len);
+  Udp.endPacket();
+}
+
+#define SENSOR_RSSI 0x80
+
+void sendSensorsData() {
+  if (!cisServerIpAddress)
+    return;
+
+  // Only send sensors data each 100 runs
+  static int prescaler = 0;
+  prescaler++;
+  prescaler %= 100;
+  if (prescaler)
+    return;
+
+  // RSSI
+  outgoingPacket[0] = SENSOR_RSSI;
+  int32_t rssi = WiFi.RSSI();
+  memcpy(outgoingPacket + 1, &rssi, 4); // Copy int32_t (ie. 4 bytes) starting at outgoingPacket[1] address
+  sendUdpPacket(5);
+  // Serial.printf("RSSI: %d\n", rssi);
 }
