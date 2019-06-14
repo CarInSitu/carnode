@@ -4,13 +4,20 @@
 
 #include "SmartAudio.h"
 
+#include <IRremoteESP8266.h>
+#include <IRrecv.h>
+#include <IRutils.h>
+
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 4
 #define VERSION_PATCH 0
 
 #define NODE_TYPE_CAR 0
 
-// Smart audio
+#define SENSOR_IR 0x81
+
+IRrecv irrecv(D5);
+decode_results results;
 
 // WiFi access point connection configuration
 const char* ssid = "CarInSitu";
@@ -33,6 +40,7 @@ int steeringLimitLeft;
 int steeringLimitRight;
 int steeringTrim = 0;
 
+// Smart audio
 SmartAudio smartAudio(D8, D7); // RX, TX
 
 void setup() {
@@ -41,6 +49,9 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
   delay(10);
+
+  // IR
+  irrecv.enableIRIn(); // Start the receiver
 
   // SmartAudio
   smartAudio.begin();
@@ -78,6 +89,20 @@ void setup() {
 }
 
 void loop() {
+  // IR
+  if (irrecv.decode(&results)) {
+    // print() & println() can't handle printing long longs. (uint64_t)
+    serialPrintUint64(results.value, HEX);
+    Serial.println("");
+    if (!cisServerIpAddress)
+      return;
+
+    outgoingPacket[0] = SENSOR_IR;
+    memcpy(outgoingPacket + 1, &(results.value), sizeof(results.value) + 1); // Copy uint64_t (ie. 8 bytes) starting at outgoingPacket[1] address
+    sendUdpPacket(sizeof(results.value) + 1);
+    irrecv.resume(); // Receive the next value
+  }
+
   int packetSize = Udp.parsePacket();
   if (packetSize) {
     // receive incoming UDP packets
