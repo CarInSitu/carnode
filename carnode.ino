@@ -97,9 +97,8 @@ void loop() {
     if (!cisServerIpAddress)
       return;
 
-    outgoingPacket[0] = SENSOR_IR;
-    memcpy(outgoingPacket + 1, &(results.value), sizeof(results.value) + 1); // Copy uint64_t (ie. 8 bytes) starting at outgoingPacket[1] address
-    sendUdpPacket(sizeof(results.value) + 1);
+    sendUdpSensorData(SENSOR_IR, results.value, sizeof(results.value));
+
     irrecv.resume(); // Receive the next value
   }
 
@@ -118,6 +117,13 @@ void loop() {
   // Give some CPU to process internal things...
   // UDP is instable without this...
   yield();
+}
+
+void sendUdpSensorData(const uint8_t type, const void* data, const int lenght)
+{
+  outgoingPacket[0] = type;
+  memcpy(outgoingPacket + 1, data, lenght + 1);
+  sendUdpPacket(lenght + 1);
 }
 
 void computeSteeringLimits() {
@@ -183,9 +189,6 @@ void sendSensorsData() {
     return;
 
   // RSSI
-  outgoingPacket[0] = SENSOR_RSSI;
   int32_t rssi = WiFi.RSSI();
-  memcpy(outgoingPacket + 1, &rssi, 4); // Copy int32_t (ie. 4 bytes) starting at outgoingPacket[1] address
-  sendUdpPacket(5);
-  // Serial.printf("RSSI: %d\n", rssi);
+  sendUdpSensorData(SENSOR_RSSI, &rssi, sizeof(rssi));
 }
