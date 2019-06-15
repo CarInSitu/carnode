@@ -87,11 +87,20 @@ void setup() {
 }
 
 void loop() {
-  // IR
+  // UDP: receive incoming packets
+  int packetSize = Udp.parsePacket();
+  if (packetSize) {
+    Serial.printf("UDP: Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
+    int len = Udp.read(incomingPacket, 255);
+    // Serial.printf("UDP packet contents: %s\n", incomingPacket);
+    processIncomingPackets(len);
+  }
+
+  // IR: Grab IR decoded results
   if (irrecv.decode(&results)) {
-    // print() & println() can't handle printing long longs. (uint64_t)
     serialPrintUint64(results.value, HEX);
     Serial.println("");
+
     if (!cisServerIpAddress)
       return;
 
@@ -100,14 +109,6 @@ void loop() {
     irrecv.resume(); // Receive the next value
   }
 
-  int packetSize = Udp.parsePacket();
-  if (packetSize) {
-    // receive incoming UDP packets
-    Serial.printf("UDP: Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
-    int len = Udp.read(incomingPacket, 255);
-    // Serial.printf("UDP packet contents: %s\n", incomingPacket);
-    processIncomingPackets(len);
-  }
   sendSensorsData();
 
   smartAudio.debugRx();
