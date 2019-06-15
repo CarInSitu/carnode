@@ -50,13 +50,6 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH);
   delay(10);
 
-  // IR
-  irrecv.enableIRIn(); // Start the receiver
-
-  // SmartAudio
-  smartAudio.begin();
-  smartAudio.setChannel(32);
-
   // Init WiFi
   WiFi.disconnect();
   delay(10);
@@ -86,6 +79,13 @@ void setup() {
 
   Udp.begin(localUdpPort);
   Serial.printf("UDP: Listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
+
+  // IR
+  irrecv.enableIRIn(); // Start the receiver
+
+  // SmartAudio
+  smartAudio.begin();
+  smartAudio.setChannel(32);
 }
 
 void loop() {
