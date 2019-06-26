@@ -1,2 +1,2 @@
 lint:
-	clang-format -i *.ino
+	clang-format -i *.ino *.h *.cpp
