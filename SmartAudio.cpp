@@ -50,7 +50,7 @@ void SmartAudio::send(uint8_t* buf, const uint8_t len) {
     Serial.printf("0x%02x ", buf[i]);
   }
   Serial.printf("\n");
-  pinMode(_rxPin, INPUT);
+  pinMode(_txPin, INPUT);
 }
 
 void SmartAudio::debugRx() {
