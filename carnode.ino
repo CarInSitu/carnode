@@ -107,7 +107,7 @@ void loop() {
     if (!cisServerIpAddress)
       return;
 
-    sendUdpSensorData(SENSOR_IR, results.value, sizeof(results.value));
+    sendUdpSensorData(SENSOR_IR, &(results.value), sizeof(results.value));
 
     irrecv.resume(); // Receive the next value
   }
