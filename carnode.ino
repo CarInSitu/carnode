@@ -14,6 +14,9 @@
 
 #define NODE_TYPE_CAR 0
 
+#define SENSOR_RSSI 0x80
+#define SENSOR_IR 0x81
+
 IRrecv irrecv(D5);
 decode_results results;
 
@@ -172,9 +175,6 @@ void sendUdpPacket(const int len) {
   Udp.write(outgoingPacket, len);
   Udp.endPacket();
 }
-
-#define SENSOR_RSSI 0x80
-#define SENSOR_IR 0x81
 
 void sendSensorsData() {
   if (!cisServerIpAddress)
