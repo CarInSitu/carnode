@@ -44,20 +44,23 @@ void SmartAudio::getSettings() {
 void SmartAudio::send(uint8_t* buf, const uint8_t len) {
   buf[len - 1] = crc8(buf, len - 1);
   pinMode(_txPin, OUTPUT);
-  Serial.printf("\nTX: ");
+  Serial.printf("[SmartAudio] TX: ");
   _softSerial.write(buf, len);
   for (int i = 0; i < len; i++) {
     Serial.printf("0x%02x ", buf[i]);
   }
-
   Serial.printf("\n");
   pinMode(_rxPin, INPUT);
 }
 
 void SmartAudio::debugRx() {
   if (_softSerial.available() > 0) {
-    char incomingByte = _softSerial.read();
-    Serial.printf("RX: 0x%02x\n", incomingByte);
+    Serial.printf("[SmartAudio] RX:");
+    while (_softSerial.available()) {
+      char incomingByte = _softSerial.read();
+      Serial.printf(" 0x%02x", incomingByte);
+    }
+    Serial.printf("\n");
   }
 }
 
