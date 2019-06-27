@@ -1,0 +1,10 @@
+---
+image: ubuntu:bionic
+
+lint:
+  stage: test
+  script:
+    - apt-get --yes --quiet update
+    - apt-get --yes --quiet install clang-format make git
+    - make lint
+    - git diff --exit-code
