@@ -1,5 +1,6 @@
 #include "ESP8266WiFi.h"
 #include <WiFiUdp.h>
+
 #include <Servo.h>
 
 #include "SmartAudio.h"
@@ -16,9 +17,6 @@
 
 #define SENSOR_RSSI 0x80
 #define SENSOR_IR 0x81
-
-IRrecv irrecv(D5);
-decode_results results;
 
 // WiFi access point connection configuration
 const char* ssid = "CarInSitu";
@@ -43,6 +41,10 @@ int steeringTrim = 0;
 
 // Smart audio
 SmartAudio smartAudio(D8, D7); // RX, TX
+
+// IR
+IRrecv irrecv(D5);
+decode_results results;
 
 void setup() {
   // Init serial monitoring
