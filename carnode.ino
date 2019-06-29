@@ -176,6 +176,8 @@ void processIncomingPackets(const int len) {
     smartAudio.setChannel(*uint8_value);
     break;
   }
+  default:
+    Serial.printf("Unknown UDP command: 0x%02x\n", incomingPacket[0]);
   }
 }
 
