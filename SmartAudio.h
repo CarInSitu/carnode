@@ -12,9 +12,9 @@ public:
   void send(uint8_t* buf, const uint8_t len);
   void debugRx();
 
+  void getSettings();
   void setChannel(const uint8_t channel);
   void setMode(const uint8_t mode);
-  void getSettings();
 
 private:
   int _rxPin;

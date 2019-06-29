@@ -7,6 +7,11 @@ void SmartAudio::begin() {
   _softSerial.begin(4800);
 }
 
+void SmartAudio::getSettings() {
+  uint8_t frame[] = {0xaa, 0x55, 0x03, 0x00, 0xff};
+  send(frame, sizeof(frame));
+}
+
 void SmartAudio::setChannel(const uint8_t channel) {
   //0xaa, 0x55, 0x07, 0x01, 0x25, 0x37
   // set frequency 5732
@@ -33,11 +38,6 @@ void SmartAudio::setChannel(const uint8_t channel) {
 void SmartAudio::setMode(const uint8_t mode) {
   uint8_t frame[] = {0xaa, 0x55, 0x0b, 0x01, 0x08, 0xff};
   // FIXME: frame[] = mode;
-  send(frame, sizeof(frame));
-}
-
-void SmartAudio::getSettings() {
-  uint8_t frame[] = {0xaa, 0x55, 0x03, 0x00, 0xff};
   send(frame, sizeof(frame));
 }
 
