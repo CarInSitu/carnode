@@ -183,6 +183,8 @@ void sendUdpPacket(const int len) {
   Udp.beginPacket(cisServerIpAddress, 4200);
   Udp.write(outgoingPacket, len);
   Udp.endPacket();
+  // Give some CPU to process internal things...
+  yield();
 }
 
 void sendSensorsData() {
