@@ -88,7 +88,7 @@ void setup() {
 
   // SmartAudio
   smartAudio.begin();
-  smartAudio.setChannel(32);
+  smartAudio.setPower(0);
 }
 
 void loop() {
@@ -138,6 +138,7 @@ void computeSteeringLimits() {
 }
 
 #define DISCOVERY_REQUEST 0x01
+#define VIDEO_CHANNEL 0x05
 #define STEERING 0x10
 #define THROTTLE 0x11
 #define TRIM_STEERING 0x20
@@ -164,11 +165,17 @@ void processIncomingPackets(const int len) {
     value = map(*int_value, -32768, 32767, 1000, 2000);
     throttleServo.writeMicroseconds(value);
     break;
-  case TRIM_STEERING:
+  case TRIM_STEERING: {
     int8_t* int8_value = (int8_t*)&incomingPacket[1];
     steeringTrim = *int8_value;
     computeSteeringLimits();
     break;
+  }
+  case VIDEO_CHANNEL: {
+    uint8_t* uint8_value = (uint8_t*)&incomingPacket[1];
+    smartAudio.setChannel(*uint8_value);
+    break;
+  }
   }
 }
 
