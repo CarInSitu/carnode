@@ -36,8 +36,8 @@ void SmartAudio::setChannel(const uint8_t channel) {
 }
 
 void SmartAudio::setMode(const uint8_t mode) {
-  uint8_t frame[] = {0xaa, 0x55, 0x0b, 0x01, 0x08, 0xff};
-  // FIXME: frame[] = mode;
+  uint8_t frame[] = {0xaa, 0x55, 0x0b, 0x01, 0xff, 0xff};
+  frame[4] = mode;
   send(frame, sizeof(frame));
 }
 
