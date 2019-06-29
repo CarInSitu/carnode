@@ -162,8 +162,7 @@ void processIncomingPackets(const int len) {
     steeringServo.writeMicroseconds(value);
     break;
   case THROTTLE:
-    value = map(*int_value, -32768, 32767, 1000, 2000);
-    throttleServo.writeMicroseconds(value);
+    setThrottle(*int_value);
     break;
   case TRIM_STEERING: {
     int8_t* int8_value = (int8_t*)&incomingPacket[1];
@@ -179,6 +178,17 @@ void processIncomingPackets(const int len) {
   default:
     Serial.printf("Unknown UDP command: 0x%02x\n", incomingPacket[0]);
   }
+}
+
+void setThrottle(int value) {
+  if (value == 0) {
+    value = 1500;
+  } else if (value > 0) {
+    value = map(value, 0, 32767, 1576, 2000);
+  } else if (value < 0) {
+    value = map(value, -32768, 0, 1000, 1423);
+  }
+  throttleServo.writeMicroseconds(value);
 }
 
 void sendUdpPacket(const int len) {
