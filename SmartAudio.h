@@ -14,6 +14,7 @@ public:
 
   void getSettings();
   void setChannel(const uint8_t channel);
+  void setPower(const uint8_t power);
   void setMode(const uint8_t mode);
 
 private:

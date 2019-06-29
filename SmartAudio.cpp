@@ -35,6 +35,12 @@ void SmartAudio::setChannel(const uint8_t channel) {
   send(frame, sizeof(frame));
 }
 
+void SmartAudio::setPower(const uint8_t power) {
+  uint8_t frame[] = {0xaa, 0x55, 0x05, 0x01, 0xff, 0xff};
+  frame[4] = power;
+  send(frame, sizeof(frame));
+}
+
 void SmartAudio::setMode(const uint8_t mode) {
   uint8_t frame[] = {0xaa, 0x55, 0x0b, 0x01, 0xff, 0xff};
   frame[4] = mode;
