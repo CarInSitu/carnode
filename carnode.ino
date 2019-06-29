@@ -72,8 +72,8 @@ void setup() {
   Serial.printf("WiFi: Connected to SSID: \"%s\" with IP: %s\n", ssid, WiFi.localIP().toString().c_str());
 
   //Init servos
-  steeringServo.attach(5); // D1
-  throttleServo.attach(4); // D2
+  steeringServo.attach(D1);
+  throttleServo.attach(D2);
 
   steeringServo.writeMicroseconds(1500);
   throttleServo.writeMicroseconds(1500);
