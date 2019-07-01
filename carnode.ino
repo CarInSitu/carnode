@@ -49,9 +49,13 @@ decode_results results;
 void setup() {
   // Init serial monitoring
   Serial.begin(115200);
+
+  // Shutdown bultin LED
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
   delay(10);
+
+  Serial.printf("\nCarNode version: %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
   // Init WiFi
   WiFi.disconnect();
@@ -62,12 +66,14 @@ void setup() {
   String hostname = String("CarNode-") + String(mac[5], HEX) + String(mac[4], HEX) + String(mac[3], HEX) + String(mac[2], HEX) + String(mac[1], HEX) + String(mac[0], HEX);
   WiFi.hostname(hostname);
   WiFi.begin(ssid, password);
-  Serial.printf("\nHostname set to: %s\n", WiFi.hostname().c_str());
+  Serial.printf("WiFi: Hostname: %s\n", WiFi.hostname().c_str());
 
   while (WiFi.status() != WL_CONNECTED) {
-    delay(2000);
+    delay(1000);
     Serial.printf("WiFi: Connecting... (status: %d)\n", WiFi.status());
   }
+
+  // Poweron bultin LED
   digitalWrite(LED_BUILTIN, LOW);
   Serial.printf("WiFi: Connected to SSID: \"%s\" with IP: %s\n", ssid, WiFi.localIP().toString().c_str());
 
