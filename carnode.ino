@@ -1,4 +1,5 @@
 #include "ESP8266WiFi.h"
+#include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 
 #include <Servo.h>
@@ -10,8 +11,8 @@
 #include <IRutils.h>
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 5
-#define VERSION_PATCH 1
+#define VERSION_MINOR 6
+#define VERSION_PATCH 0
 
 #define NODE_TYPE_CAR 0
 
@@ -77,6 +78,9 @@ void setup() {
   digitalWrite(LED_BUILTIN, LOW);
   Serial.printf("WiFi: Connected to SSID: \"%s\" with IP: %s\n", ssid, WiFi.localIP().toString().c_str());
 
+  // MDNS
+  MDNS.begin(hostname);
+
   //Init servos
   steeringServo.attach(D1);
   throttleServo.attach(D2);
@@ -98,6 +102,34 @@ void setup() {
 }
 
 void loop() {
+  if (!cisServerIpAddress) {
+    searchCisServer();
+  } else {
+    processUdp();
+    processIr();
+    sendSensorsData();
+  }
+
+  smartAudio.debugRx();
+
+  // Give some CPU to process internal things...
+  // UDP is instable without this...
+  yield();
+}
+
+void searchCisServer() {
+  int n = MDNS.queryService("cisserver", "tcp");
+  if (n) {
+    // Connect to the first available CisServer
+    cisServerIpAddress = MDNS.IP(0);
+    Serial.printf("MDNS: CIS server discovered: %s\n", cisServerIpAddress.toString().c_str());
+  } else {
+    Serial.printf("MDNS: Waiting for CIS server...\n");
+    delay(1000);
+  }
+}
+
+void processUdp() {
   // UDP: receive incoming packets
   int packetSize = Udp.parsePacket();
   if (packetSize) {
@@ -106,27 +138,18 @@ void loop() {
     // Serial.printf("UDP packet contents: %s\n", incomingPacket);
     processIncomingPackets(len);
   }
+}
 
+void processIr() {
   // IR: Grab IR decoded results
   if (irrecv.decode(&results)) {
     serialPrintUint64(results.value, HEX);
     Serial.println("");
 
-    if (!cisServerIpAddress)
-      return;
-
     sendUdpSensorData(SENSOR_IR, &(results.value), sizeof(results.value));
 
     irrecv.resume(); // Receive the next value
   }
-
-  sendSensorsData();
-
-  smartAudio.debugRx();
-
-  // Give some CPU to process internal things...
-  // UDP is instable without this...
-  yield();
 }
 
 void sendUdpSensorData(const uint8_t type, const void* data, const int lenght) {
