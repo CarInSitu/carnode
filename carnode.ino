@@ -35,6 +35,7 @@ unsigned int localUdpPort = 4210;
 char incomingPacket[256];
 char outgoingPacket[256];
 IPAddress cisServerIpAddress;
+WiFiClient cisClient;
 
 int steeringLimitLeft;
 int steeringLimitRight;
@@ -73,9 +74,9 @@ void setup() {
     delay(1000);
     Serial.printf("WiFi: Connecting... (status: %d)\n", WiFi.status());
   }
-
   // Poweron bultin LED
   digitalWrite(LED_BUILTIN, LOW);
+
   Serial.printf("WiFi: Connected to SSID: \"%s\" with IP: %s\n", ssid, WiFi.localIP().toString().c_str());
 
   // MDNS
@@ -102,12 +103,13 @@ void setup() {
 }
 
 void loop() {
-  if (!cisServerIpAddress) {
-    searchCisServer();
-  } else {
+  if (cisClient.connected()) {
+    Serial.printf("TCP: %d bytes available\n", cisClient.available());
     processUdp();
     processIr();
     sendSensorsData();
+  } else {
+    searchCisServer();
   }
 
   smartAudio.debugRx();
@@ -123,6 +125,10 @@ void searchCisServer() {
     // Connect to the first available CisServer
     cisServerIpAddress = MDNS.IP(0);
     Serial.printf("MDNS: CIS server discovered: %s\n", cisServerIpAddress.toString().c_str());
+    if (!cisClient.connect(cisServerIpAddress, MDNS.port(0))) {
+      Serial.println("TCP: Connection failed!");
+      delay(1000);
+    }
   } else {
     Serial.printf("MDNS: Waiting for CIS server...\n");
     delay(1000);
