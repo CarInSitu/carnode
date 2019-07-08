@@ -29,7 +29,7 @@ void SmartAudio::setChannel(const uint8_t channel) {
   // 0x21 -> 5695
   // 0x22 -> 5732
   // 0x27 -> 5905
-
+  Serial.printf("[SmartAudio] Set channel: %d\n", channel);
   uint8_t frame[] = {0xaa, 0x55, 0x07, 0x01, 0xff, 0xff};
   frame[4] = channel;
   send(frame, sizeof(frame));

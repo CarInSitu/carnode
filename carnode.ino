@@ -12,7 +12,7 @@
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 6
-#define VERSION_PATCH 0
+#define VERSION_PATCH 1
 
 #define NODE_TYPE_CAR 0
 
@@ -117,7 +117,7 @@ void setup() {
 
 void loop() {
   if (cisClient.connected()) {
-    Serial.printf("TCP: %d bytes available\n", cisClient.available());
+    processTcp();
     processUdp();
     processIr();
     sendSensorsData();
@@ -141,10 +141,82 @@ void searchCisServer() {
     if (!cisClient.connect(cisServerIpAddress, MDNS.port(0))) {
       Serial.println("TCP: Connection failed!");
       delay(1000);
+    } else {
+      Serial.println("TCP: Connection established.\n");
     }
   } else {
     Serial.printf("MDNS: Waiting for CIS server...\n");
     delay(1000);
+  }
+}
+
+#define PING 0x00
+#define VERSION 0x01
+#define VIDEO_CHANNEL 0x05
+#define INVALID_COMMAND 0xff
+
+byte incomingTcpFrame[64];
+byte* incomingTcpFramePtr = incomingTcpFrame;
+
+void processTcp() {
+  static int remainingBytesForCommand = -1;
+  static byte command;
+
+  while (int availableBytes = cisClient.available()) {
+    if (remainingBytesForCommand == -1) { // We are waiting for a command
+      command = cisClient.read();
+      incomingTcpFramePtr = incomingTcpFrame;
+      switch (command) {
+      case PING: {
+        cisClient.write(PING);
+        break;
+      }
+      case VERSION: {
+        outgoingPacket[0] = VERSION;       // repeat command code
+        outgoingPacket[1] = NODE_TYPE_CAR; // says im a car node
+        outgoingPacket[2] = VERSION_MAJOR; // says my firmware version
+        outgoingPacket[3] = VERSION_MINOR;
+        outgoingPacket[4] = VERSION_PATCH;
+        Serial.printf("Replied to VERSION request\n");
+        cisClient.write(outgoingPacket, 5);
+        break;
+      }
+      case VIDEO_CHANNEL: {
+        remainingBytesForCommand = 1;
+        break;
+      }
+      default: {
+        // Unknown command
+        Serial.printf("TCP: Unknown command: 0x%02x (%d available bytes)\n", command, availableBytes);
+        remainingBytesForCommand = availableBytes - 1;
+        command = INVALID_COMMAND;
+      }
+      }
+    } else {
+      *incomingTcpFramePtr = cisClient.read();
+      remainingBytesForCommand--;
+
+      if (command == INVALID_COMMAND) {
+        // Trash any byte
+        incomingTcpFramePtr = incomingTcpFrame;
+      } else {
+        ++incomingTcpFramePtr;
+      }
+
+      if (remainingBytesForCommand == 0) {
+        switch (command) {
+        case VIDEO_CHANNEL: {
+          uint8_t* uint8_value = (uint8_t*)&incomingTcpFrame[0];
+          smartAudio.setChannel(*uint8_value);
+          break;
+        }
+        default: {
+          // Nothing to do with invalid command
+        }
+        }
+        remainingBytesForCommand = -1;
+      }
+    }
   }
 }
 
@@ -185,8 +257,6 @@ void computeSteeringLimits() {
   Serial.printf("Config: Steering center is now at %d, left limit at %d, right limit at %d\n", center, steeringLimitLeft, steeringLimitRight);
 }
 
-#define DISCOVERY_REQUEST 0x01
-#define VIDEO_CHANNEL 0x05
 #define STEERING 0x10
 #define THROTTLE 0x11
 #define TRIM_STEERING 0x20
@@ -195,16 +265,6 @@ void processIncomingPackets(const int len) {
   int16_t* int_value = (int16_t*)&incomingPacket[1];
   int value;
   switch (incomingPacket[0]) {
-  case DISCOVERY_REQUEST:
-    cisServerIpAddress = Udp.remoteIP();
-    outgoingPacket[0] = DISCOVERY_REQUEST; // repeat command code
-    outgoingPacket[1] = NODE_TYPE_CAR;     // says im a car node
-    outgoingPacket[2] = VERSION_MAJOR;     // says my firmware version
-    outgoingPacket[3] = VERSION_MINOR;
-    outgoingPacket[4] = VERSION_PATCH;
-    sendUdpPacket(5);
-    Serial.printf("Replied to DISCOVERY request to CIS server: %s\n", cisServerIpAddress.toString().c_str());
-    break;
   case STEERING:
     value = map(*int_value, -32768, 32767, steeringLimitLeft, steeringLimitRight);
     steeringServo.writeMicroseconds(value);
@@ -218,13 +278,8 @@ void processIncomingPackets(const int len) {
     computeSteeringLimits();
     break;
   }
-  case VIDEO_CHANNEL: {
-    uint8_t* uint8_value = (uint8_t*)&incomingPacket[1];
-    smartAudio.setChannel(*uint8_value);
-    break;
-  }
   default:
-    Serial.printf("Unknown UDP command: 0x%02x\n", incomingPacket[0]);
+    Serial.printf("UDP Unknown command: 0x%02x\n", incomingPacket[0]);
   }
 }
 
