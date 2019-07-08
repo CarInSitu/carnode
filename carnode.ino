@@ -99,7 +99,20 @@ void setup() {
 
   // SmartAudio
   smartAudio.begin();
+  smartAudio.getSettings();
+  // NOTE: Reply should be
+  // 0xaa, 0x55, 0x09, 0x06, 0x00           , 0x00 , 0x14          , 0x16 0xe9,    , 0xfa
+  // 0xaa, 0x55, 0x09, 0x06, current_channel, power, operation_mode, freq (2 bytes), crc8
+  // 0x14 as operation_mode means
+  // - VTX unlocked (but what is unlocked?)
+  // - In-range pit mode active
+  // - VTX uses "set channel"
+  delay(100);
+  smartAudio.debugRx();
+  delay(100);
   smartAudio.setPower(0);
+  delay(200);
+  smartAudio.debugRx();
 }
 
 void loop() {
