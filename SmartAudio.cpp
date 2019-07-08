@@ -49,14 +49,14 @@ void SmartAudio::setMode(const uint8_t mode) {
 
 void SmartAudio::send(uint8_t* buf, const uint8_t len) {
   buf[len - 1] = crc8(buf, len - 1);
-  pinMode(_txPin, OUTPUT);
+  _softSerial.enableTx(true);
   Serial.printf("[SmartAudio] TX: ");
   _softSerial.write(buf, len);
   for (int i = 0; i < len; i++) {
     Serial.printf("0x%02x ", buf[i]);
   }
   Serial.printf("\n");
-  pinMode(_txPin, INPUT);
+  _softSerial.enableTx(false);
 }
 
 void SmartAudio::debugRx() {
