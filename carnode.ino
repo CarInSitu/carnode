@@ -42,10 +42,10 @@ int steeringLimitRight;
 int steeringTrim = 0;
 
 // Smart audio
-SmartAudio smartAudio(D8, D7); // RX, TX
+SmartAudio smartAudio(15, 15); // RX, TX
 
 // IR
-IRrecv irrecv(D5);
+IRrecv irrecv(14);
 decode_results results;
 
 void setup() {
@@ -83,8 +83,8 @@ void setup() {
   MDNS.begin(hostname);
 
   //Init servos
-  steeringServo.attach(D1);
-  throttleServo.attach(D2);
+  steeringServo.attach(5);
+  throttleServo.attach(4);
 
   steeringServo.writeMicroseconds(1500);
   throttleServo.writeMicroseconds(1500);
