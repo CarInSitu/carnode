@@ -1,10 +1,8 @@
 ---
-image: ubuntu:bionic
+image: registry.opus-codium.fr/image-builder/docker-images/platformio:opuscodium-platformio
 
 lint:
   stage: test
   script:
-    - apt-get --yes --quiet update
-    - apt-get --yes --quiet install clang-format make git
     - make lint
     - git diff --exit-code
