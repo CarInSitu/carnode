@@ -1,6 +1,15 @@
 ---
 image: registry.opus-codium.fr/image-builder/docker-images/platformio:opuscodium-platformio
 
+stages:
+ - build
+ - test
+
+build:
+  stage: build
+  script:
+    - platformio ci --project-conf platformio.ini src/
+
 lint:
   stage: test
   script:

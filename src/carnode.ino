@@ -224,7 +224,7 @@ void processUdp() {
   // UDP: receive incoming packets
   int packetSize = Udp.parsePacket();
   if (packetSize) {
-    Serial.printf("UDP: Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
+    // Serial.printf("UDP: Received %d bytes from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
     int len = Udp.read(incomingPacket, 255);
     // Serial.printf("UDP packet contents: %s\n", incomingPacket);
     processIncomingPackets(len);

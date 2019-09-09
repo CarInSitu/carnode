@@ -19,10 +19,33 @@
  * Battery monitor (STC3100)
  * IMU (LSM6DS33)
 
-## Notes
+## Development environment
 
-Our current VTX (ie. FX868T) seems to not support 'Set Frequency' function specified in SmartAudio datasheet : it correctly reply to request but no change appears while setting channel fully works.
+### Setup platformio
 
-## Installation
+```shell
+pip install --user virtualenv
+```
 
-Follow instructions at https://github.com/esp8266/Arduino#installing-with-boards-manager
+Add in `~/.profile`:
+
+```shell
+if [ -d "$HOME/.local/bin" ] ; then
+    PATH="$HOME/.local/bin:$PATH"
+fi
+
+if [ -d "$HOME/.platformio/penv/bin" ] ; then
+    PATH="$HOME/.platformio/penv/bin:$PATH"
+fi
+```
+
+Reload `~/.profile`:
+
+```shell
+source ~/.profile
+```
+
+```shell
+virtualenv $HOME/.platformio/penv
+```
+
