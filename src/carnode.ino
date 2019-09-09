@@ -48,6 +48,35 @@ SmartAudio smartAudio(15, 15); // RX, TX
 IRrecv irrecv(14);
 decode_results results;
 
+void print_wifi_status(int status) {
+  switch (status) {
+  case WL_CONNECTED:
+    Serial.print("Connected to a WiFi network");
+    break;
+  case WL_NO_SHIELD:
+    Serial.print("No WiFi shield is present");
+    break;
+  case WL_IDLE_STATUS:
+    Serial.print("Idle");
+    break;
+  case WL_NO_SSID_AVAIL:
+    Serial.print("No SSID are available");
+    break;
+  case WL_SCAN_COMPLETED:
+    Serial.print("Scan networks is completed");
+    break;
+  case WL_CONNECT_FAILED:
+    Serial.print("Connection fails for all the attempts");
+    break;
+  case WL_CONNECTION_LOST:
+    Serial.print("Connection is lost");
+    break;
+  case WL_DISCONNECTED:
+    Serial.print("Disconnected");
+    break;
+  }
+}
+
 void setup() {
   // Init serial monitoring
   Serial.begin(115200);
@@ -72,7 +101,9 @@ void setup() {
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
-    Serial.printf("WiFi: Connecting... (status: %d)\n", WiFi.status());
+    Serial.printf("WiFi: Connecting... (status: %d): ", WiFi.status());
+    print_wifi_status(WiFi.status());
+    Serial.print("\n");
   }
   // Poweron bultin LED
   digitalWrite(LED_BUILTIN, LOW);
