@@ -49,3 +49,44 @@ source ~/.profile
 virtualenv $HOME/.platformio/penv
 ```
 
+### Usage
+
+ * Compile
+
+     ```
+     pio run
+     ```
+
+ * Compile and upload through serial
+
+    ```
+    pio run -t upload
+    ```
+
+ * Compile and upload through OTA
+
+    ```
+    avahi-browse -a -t # List available mDNS services
+    avahi-browse -t _arduino._tcp | grep CarNode | awk -F' ' '{ print $4 }' # List car nodes mDNS hostnames
+    pio run --target upload --upload-port TARGET_FQDN.local
+    ```
+
+    If you want a massive OTA update:
+
+    ```
+    for i in `avahi-browse -t _arduino._tcp | grep CarNode | awk -F' ' '{ print $4 }'`; do
+      pio run --target upload --upload-port ${i}.local
+    done
+    ```
+
+ * Monitor (ie. connect to serial)
+
+    ```
+    pio device monitor
+    ```
+
+ * List available devices
+
+    ```
+    pio device list
+    ```

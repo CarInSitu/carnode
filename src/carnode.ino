@@ -10,8 +10,10 @@
 #include <IRrecv.h>
 #include <IRutils.h>
 
+#include "OTA.h"
+
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 7
+#define VERSION_MINOR 8
 #define VERSION_PATCH 0
 
 #define NODE_TYPE_CAR 0
@@ -47,6 +49,9 @@ SmartAudio smartAudio(15, 15); // RX, TX
 // IR
 IRrecv irrecv(14);
 decode_results results;
+
+// OTA
+OTA ota;
 
 void print_wifi_status(int status) {
   switch (status) {
@@ -144,6 +149,8 @@ void setup() {
   smartAudio.setPower(0);
   delay(200);
   smartAudio.debugRx();
+
+  ota.begin();
 }
 
 void loop() {
@@ -153,6 +160,7 @@ void loop() {
     processIr();
     sendSensorsData();
   } else {
+    ota.process();
     searchCisServer();
   }
 
