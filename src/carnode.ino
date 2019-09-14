@@ -11,6 +11,7 @@
 #include <IRutils.h>
 
 #include "OTA.h"
+#include "FrontHeadlights.h"
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 8
@@ -53,6 +54,9 @@ decode_results results;
 // OTA
 OTA ota;
 
+// Front headlights
+FrontHeadlights frontHeadlights(0);
+
 void print_wifi_status(int status) {
   switch (status) {
   case WL_CONNECTED:
@@ -89,6 +93,8 @@ void setup() {
   // Shutdown bultin LED
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
+
+  frontHeadlights.turn(HIGH);
   delay(10);
 
   Serial.printf("\nCarNode version: %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
