@@ -88,7 +88,7 @@ void print_wifi_status(int status) {
 
 void setup() {
   // Init serial monitoring
-  Serial.begin(115200);
+  Serial.begin(76800);
 
   // Shutdown bultin LED
   pinMode(LED_BUILTIN, OUTPUT);
