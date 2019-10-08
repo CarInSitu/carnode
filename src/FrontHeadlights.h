@@ -3,11 +3,12 @@
 
 class FrontHeadlights {
 public:
-  FrontHeadlights(const int pin);
+  FrontHeadlights(const int pin, const bool inverted);
 
-  void turn(int on);
+  void turn(const bool on);
 
 private:
   int _pin;
+  bool _inverted;
 };
 #endif

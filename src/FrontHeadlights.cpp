@@ -2,10 +2,11 @@
 
 #include <Arduino.h>
 
-FrontHeadlights::FrontHeadlights(const int pin) : _pin(pin) {
+FrontHeadlights::FrontHeadlights(const int pin, const bool inverted) : _pin(pin), _inverted(inverted) {
   pinMode(_pin, OUTPUT);
 };
 
-void FrontHeadlights::turn(int on) {
-  digitalWrite(_pin, on);
+void FrontHeadlights::turn(const bool on) {
+  bool pinState = _inverted ? !on : on;
+  digitalWrite(_pin, pinState);
 };

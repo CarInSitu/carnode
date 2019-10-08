@@ -55,7 +55,7 @@ decode_results results;
 OTA ota;
 
 // Front headlights
-FrontHeadlights frontHeadlights(0);
+FrontHeadlights frontHeadlights(FRONTHEADLIGHTS_PIN, FRONTHEADLIGHTS_INVERTED);
 
 void print_wifi_status(int status) {
   switch (status) {
@@ -89,10 +89,6 @@ void print_wifi_status(int status) {
 void setup() {
   // Init serial monitoring
   Serial.begin(76800);
-
-  // Shutdown bultin LED
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);
 
   frontHeadlights.turn(HIGH);
   delay(10);
