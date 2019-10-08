@@ -87,12 +87,11 @@ void print_wifi_status(int status) {
 }
 
 void setup() {
+  // Turn off front headlights
+  frontHeadlights.enable(false);
+
   // Init serial monitoring
   Serial.begin(76800);
-
-  frontHeadlights.turn(HIGH);
-  delay(10);
-
   Serial.printf("\nCarNode version: %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
   // Init WiFi
@@ -188,6 +187,14 @@ void searchCisServer() {
   } else {
     Serial.printf("MDNS: Waiting for CIS server...\n");
     delay(1000);
+  }
+
+  if (cisClient.connected()) {
+    frontHeadlights.enable(true);
+  } else {
+    static bool enable = false;
+    enable = !enable;
+    frontHeadlights.enable(enable);
   }
 }
 

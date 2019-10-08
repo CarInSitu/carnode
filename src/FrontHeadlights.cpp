@@ -6,7 +6,7 @@ FrontHeadlights::FrontHeadlights(const int pin, const bool inverted) : _pin(pin)
   pinMode(_pin, OUTPUT);
 };
 
-void FrontHeadlights::turn(const bool on) {
+void FrontHeadlights::enable(const bool on) {
   bool pinState = _inverted ? !on : on;
   digitalWrite(_pin, pinState);
 };

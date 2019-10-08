@@ -5,7 +5,7 @@ class FrontHeadlights {
 public:
   FrontHeadlights(const int pin, const bool inverted);
 
-  void turn(const bool on);
+  void enable(const bool on);
 
 private:
   int _pin;
