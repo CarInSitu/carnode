@@ -202,6 +202,7 @@ void searchCisServer() {
 #define VERSION 0x01
 #define VIDEO_CHANNEL 0x05
 #define INVALID_COMMAND 0xff
+#define TRIM_STEERING 0x20
 
 byte incomingTcpFrame[64];
 byte* incomingTcpFramePtr = incomingTcpFrame;
@@ -233,6 +234,10 @@ void processTcp() {
         remainingBytesForCommand = 1;
         break;
       }
+      case TRIM_STEERING: {
+        remainingBytesForCommand = 1;
+        break;
+      }
       default: {
         // Unknown command
         Serial.printf("TCP: Unknown command: 0x%02x (%d available bytes)\n", command, availableBytes);
@@ -257,6 +262,11 @@ void processTcp() {
           uint8_t* uint8_value = (uint8_t*)&incomingTcpFrame[0];
           smartAudio.setChannel(*uint8_value);
           break;
+        }
+        case TRIM_STEERING: {
+          int8_t* int8_value = (int8_t*)&incomingTcpFrame[0];
+          steeringTrim = *int8_value;
+          computeSteeringLimits();
         }
         default: {
           // Nothing to do with invalid command
@@ -307,7 +317,6 @@ void computeSteeringLimits() {
 
 #define STEERING 0x10
 #define THROTTLE 0x11
-#define TRIM_STEERING 0x20
 
 void processIncomingPackets(const int len) {
   int16_t* int_value = (int16_t*)&incomingPacket[1];
@@ -320,12 +329,6 @@ void processIncomingPackets(const int len) {
   case THROTTLE:
     setThrottle(*int_value);
     break;
-  case TRIM_STEERING: {
-    int8_t* int8_value = (int8_t*)&incomingPacket[1];
-    steeringTrim = *int8_value;
-    computeSteeringLimits();
-    break;
-  }
   default:
     Serial.printf("UDP Unknown command: 0x%02x\n", incomingPacket[0]);
   }
