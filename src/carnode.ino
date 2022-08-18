@@ -198,11 +198,11 @@ void searchCisServer() {
   }
 }
 
-#define PING 0x00
-#define VERSION 0x01
-#define VIDEO_CHANNEL 0x05
+#define PING            0x00
+#define VERSION         0x01
+#define VIDEO_CHANNEL   0x05
+#define TRIM_STEERING   0x20
 #define INVALID_COMMAND 0xff
-#define TRIM_STEERING 0x20
 
 byte incomingTcpFrame[64];
 byte* incomingTcpFramePtr = incomingTcpFrame;
@@ -265,7 +265,7 @@ void processTcp() {
         }
         case TRIM_STEERING: {
           int8_t* int8_value = (int8_t*)&incomingTcpFrame[0];
-          steeringTrim = *int8_value;
+          steeringTrim += *int8_value;
           computeSteeringLimits();
         }
         default: {
