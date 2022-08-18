@@ -151,7 +151,7 @@ void setup() {
   delay(200);
   smartAudio.debugRx();
 
-  ota.begin();
+  ota.begin(hostname);
 }
 
 void loop() {

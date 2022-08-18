@@ -6,12 +6,12 @@ class OTA {
 public:
   OTA(){};
 
-  void begin() {
+  void begin(const String hostname) {
     // Port defaults to 8266
     // ArduinoOTA.setPort(8266);
 
     // Hostname defaults to esp8266-[ChipID]
-    // ArduinoOTA.setHostname("myesp8266");
+    ArduinoOTA.setHostname(hostname.c_str());
 
     // No authentication by default
     // ArduinoOTA.setPassword("admin");
