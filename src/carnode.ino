@@ -1,6 +1,7 @@
 #include "ESP8266WiFi.h"
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
+#include <EEPROM.h>
 
 #include <Servo.h>
 
@@ -44,7 +45,7 @@ WiFiClient cisClient;
 
 int steeringLimitLeft;
 int steeringLimitRight;
-int steeringTrim = 0;
+int steeringTrim;
 
 // Smart audio
 SmartAudio smartAudio(15, 15); // RX, TX
@@ -103,6 +104,9 @@ void setup() {
   Serial.begin(76800);
   Serial.printf("\nCarNode version: %d.%d.%d\n", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
+  // EEPROM
+  EEPROM.begin(sizeof(steeringTrim));
+
   // Init WiFi
   WiFi.disconnect();
   delay(10);
@@ -135,7 +139,9 @@ void setup() {
   steeringServo.writeMicroseconds(1500);
   throttleServo.writeMicroseconds(1500);
 
+  EEPROM.get(0, steeringTrim);
   computeSteeringLimits();
+  setSteering(0);
 
   Udp.begin(localUdpPort);
   Serial.printf("UDP: Listening at IP %s, UDP port %d\n", WiFi.localIP().toString().c_str(), localUdpPort);
@@ -222,6 +228,7 @@ void searchCisServer() {
 #define VERSION         0x01
 #define VIDEO_CHANNEL   0x05
 #define TRIM_STEERING   0x20
+#define WRITE_SETTINGS  0xf0
 #define INVALID_COMMAND 0xff
 
 byte incomingTcpFrame[64];
@@ -258,6 +265,10 @@ void processTcp() {
         remainingBytesForCommand = 1;
         break;
       }
+      case WRITE_SETTINGS: {
+        EEPROM.commit();
+        break;
+      }
       default: {
         // Unknown command
         Serial.printf("TCP: Unknown command: 0x%02x (%d available bytes)\n", command, availableBytes);
@@ -286,6 +297,7 @@ void processTcp() {
         case TRIM_STEERING: {
           int8_t* int8_value = (int8_t*)&incomingTcpFrame[0];
           steeringTrim += *int8_value;
+          EEPROM.put(0, steeringTrim);
           computeSteeringLimits();
         }
         default: {
@@ -340,11 +352,9 @@ void computeSteeringLimits() {
 
 void processIncomingPackets(const int len) {
   int16_t* int_value = (int16_t*)&incomingPacket[1];
-  int value;
   switch (incomingPacket[0]) {
   case STEERING:
-    value = map(*int_value, -32768, 32767, steeringLimitLeft, steeringLimitRight);
-    steeringServo.writeMicroseconds(value);
+    setSteering(*int_value);
     break;
   case THROTTLE:
     setThrottle(*int_value);
@@ -352,6 +362,11 @@ void processIncomingPackets(const int len) {
   default:
     Serial.printf("UDP Unknown command: 0x%02x\n", incomingPacket[0]);
   }
+}
+
+void setSteering(int value) {
+  value = map(value, -32768, 32767, steeringLimitLeft, steeringLimitRight);
+  steeringServo.writeMicroseconds(value);
 }
 
 void setThrottle(int value) {
