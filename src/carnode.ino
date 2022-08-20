@@ -13,6 +13,8 @@
 #include "OTA.h"
 #include "FrontHeadlights.h"
 
+#include <NeoPixelBus.h>
+
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 8
 #define VERSION_PATCH 2
@@ -57,6 +59,11 @@ OTA ota;
 // Front headlights
 FrontHeadlights frontHeadlights(FRONTHEADLIGHTS_PIN, FRONTHEADLIGHTS_INVERTED);
 
+// Back/top headlight(s)
+#define LED_STRIP_COUNT 1
+#define LED_STRIP_PIN 2
+NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1800KbpsMethod> strip(LED_STRIP_COUNT, LED_STRIP_PIN);
+
 void print_wifi_status(int status) {
   switch (status) {
   case WL_CONNECTED:
@@ -89,6 +96,8 @@ void print_wifi_status(int status) {
 void setup() {
   // Turn off front headlights
   frontHeadlights.enable(false);
+  strip.Begin();
+  strip.Show(); // Initialize all pixels to 'off'
 
   // Init serial monitoring
   Serial.begin(76800);
@@ -191,10 +200,21 @@ void searchCisServer() {
 
   if (cisClient.connected()) {
     frontHeadlights.enable(true);
+    RgbColor color(127, 0, 0);
+    strip.SetPixelColor(0, color);
+    strip.Show();
   } else {
     static bool enable = false;
     enable = !enable;
     frontHeadlights.enable(enable);
+    if(enable) {
+      RgbColor color(0, 127, 0);
+      strip.SetPixelColor(0, color);
+    } else {
+      RgbColor color(0, 0, 127);
+      strip.SetPixelColor(0, color);
+    }
+    strip.Show();
   }
 }
 
