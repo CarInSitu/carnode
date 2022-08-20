@@ -52,5 +52,10 @@ public:
     Serial.println("OTA: Ready");
   };
 
-  void process() { ArduinoOTA.handle(); };
+  void process() {
+    for(int i=0;i<5;++i) {
+      ArduinoOTA.handle();
+      delay(100);
+    }
+  };
 };

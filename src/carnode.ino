@@ -119,13 +119,11 @@ void setup() {
   Serial.printf("WiFi: Hostname: %s\n", WiFi.hostname().c_str());
 
   while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
+    delay(500);
     Serial.printf("WiFi: Connecting... (status: %d): ", WiFi.status());
     print_wifi_status(WiFi.status());
     Serial.print("\n");
   }
-  // Poweron bultin LED
-  digitalWrite(LED_BUILTIN, LOW);
 
   Serial.printf("WiFi: Connected to SSID: \"%s\" with IP: %s\n", ssid, WiFi.localIP().toString().c_str());
 
@@ -195,13 +193,11 @@ void searchCisServer() {
     Serial.printf("MDNS: CIS server discovered: %s\n", cisServerIpAddress.toString().c_str());
     if (!cisClient.connect(cisServerIpAddress, MDNS.port(0))) {
       Serial.println("TCP: Connection failed!");
-      delay(1000);
     } else {
       Serial.println("TCP: Connection established.\n");
     }
   } else {
     Serial.printf("MDNS: Waiting for CIS server...\n");
-    delay(1000);
   }
 
   if (cisClient.connected()) {
