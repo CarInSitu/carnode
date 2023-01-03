@@ -29,3 +29,10 @@ jobs:
         pip install --upgrade platformio
     - name: Run PlatformIO
       run: platformio ci --project-conf platformio.ini src/
+    - uses: actions/upload-artifact@v3
+      with:
+        name: firmwares
+        path: |
+          .pio/build/pcb_v0.1/firmware.bin
+          .pio/build/pcb_v0.2/firmware.bin
+          .pio/build/prototype/firmware.bin
