@@ -1,5 +1,24 @@
 # Car Node
 
+This firmware is designed to be embedded in _Car In Situ_ RC car.
+
+Although the main goal is to use _CarNode_ with a camera, this one is optionnal.
+
+_CarNode_ allows to use a _Wemos D1 mini_ board, or similar, to turn an RC car into a WiFi-driveable one with this GPL licenced firmware.
+
+Note: A fully featured dedicated board exists for this project to easily convert a _WLtoys K989_ RC car.
+
+## Features
+
+ * Discoverable over MDNS
+ * Discover and automatically connect to _CarInSitu_ server
+ * Send flow commands (ie. steering and throttle) through UDP
+ * Send others commands through TCP
+ * Drive PPM servos
+ * Talk with VTX to setup embedded camera (e.g. Video channels)
+ * Over-The-Air firmware uploads
+ * Decode IR codes and send them to the server
+
 ## Wiring
 
 | Wemos D1 mini GPIO | ESP8266 GPIO | Connected to             | Notes                                |
@@ -14,8 +33,8 @@
 | D7                 | 13           | I²C devices¹             | I2C CLK                              |
 | D8                 | 15           | VTX                      | SmartAudio pin                       |
 
-[0] 3 LEDs APA106 behind a level shifter (LVC1T45)
-[1] I²C devices are:
+[0] APA106 LEDs behind a level shifter (LVC1T45)
+[1] Selected, but not tested, I²C devices are:
  * Battery monitor (STC3100)
  * IMU (LSM6DS33)
 
