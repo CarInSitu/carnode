@@ -1,4 +1,4 @@
-# Car Node
+# Car firmware aka CarNode
 
 This firmware is designed to be embedded in _Car In Situ_ RC car.
 
@@ -33,10 +33,10 @@ Note: A fully featured dedicated board exists for this project to easily convert
 | D7                 | 13           | I²C devices¹             | I2C CLK                              |
 | D8                 | 15           | VTX                      | SmartAudio pin                       |
 
-[0] APA106 LEDs behind a level shifter (LVC1T45)
-[1] Selected, but not tested, I²C devices are:
- * Battery monitor (STC3100)
- * IMU (LSM6DS33)
+ - [0] APA106 LEDs behind a level shifter (LVC1T45)
+ - [1] Selected, but not tested, I²C devices are:
+   * Battery gauge (MAX17205)
+   * IMU (LSM6DS33)
 
 ## Development environment
 
