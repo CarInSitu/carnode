@@ -16,7 +16,7 @@
 #include <NeoPixelBus.h>
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 10
+#define VERSION_MINOR 20
 #define VERSION_PATCH 0
 
 #define NODE_TYPE_CAR 0
@@ -49,18 +49,16 @@ int steeringLimitRight;
 int steeringTrim;
 
 // IR
-IRrecv irrecv(14);
+IRrecv irrecv(IR_PIN);
 decode_results results;
 
 // OTA
 OTA ota;
 
 // Front headlights
-FrontHeadlights frontHeadlights(FRONTHEADLIGHTS_PIN, FRONTHEADLIGHTS_INVERTED);
+FrontHeadlights frontHeadlights(FRONTHEADLIGHTS_PIN);
 
 // Back/top headlight(s)
-#define LED_STRIP_COUNT 1
-#define LED_STRIP_PIN 2
 NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1800KbpsMethod> strip(LED_STRIP_COUNT, LED_STRIP_PIN);
 
 void print_wifi_status(int status) {
@@ -129,8 +127,8 @@ void setup() {
   MDNS.begin(hostname);
 
   //Init servos
-  steeringServo.attach(5);
-  throttleServo.attach(4);
+  steeringServo.attach(STEERING_SERVO_PIN);
+  throttleServo.attach(THROTTLE_SERVO_PIN);
 
   steeringServo.writeMicroseconds(1500);
   throttleServo.writeMicroseconds(1500);
