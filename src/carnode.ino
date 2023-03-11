@@ -6,8 +6,6 @@
 #include <Servo.h>
 #include <Ticker.h>
 
-#include "SmartAudio.h"
-
 #include <IRremoteESP8266.h>
 #include <IRrecv.h>
 #include <IRutils.h>
@@ -49,9 +47,6 @@ WiFiClient cisClient;
 int steeringLimitLeft;
 int steeringLimitRight;
 int steeringTrim;
-
-// Smart audio
-SmartAudio smartAudio(15, 15); // RX, TX
 
 // IR
 IRrecv irrecv(14);
@@ -150,23 +145,6 @@ void setup() {
   // IR
   irrecv.enableIRIn(); // Start the receiver
 
-  // SmartAudio
-  smartAudio.begin();
-  smartAudio.getSettings();
-  // NOTE: Reply should be
-  // 0xaa, 0x55, 0x09, 0x06, 0x00           , 0x00 , 0x14          , 0x16 0xe9,    , 0xfa
-  // 0xaa, 0x55, 0x09, 0x06, current_channel, power, operation_mode, freq (2 bytes), crc8
-  // 0x14 as operation_mode means
-  // - VTX unlocked (but what is unlocked?)
-  // - In-range pit mode active
-  // - VTX uses "set channel"
-  delay(100);
-  smartAudio.debugRx();
-  delay(100);
-  smartAudio.setPower(0);
-  delay(200);
-  smartAudio.debugRx();
-
   // Throttle command watchdog
   throttleWatchdog.attach_ms(200, []() {
     if(throttleWatchdogBone) {
@@ -190,8 +168,6 @@ void loop() {
     ota.process();
     searchCisServer();
   }
-
-  smartAudio.debugRx();
 
   // Give some CPU to process internal things...
   // UDP is instable without this...
@@ -300,7 +276,7 @@ void processTcp() {
         switch (command) {
         case VIDEO_CHANNEL: {
           uint8_t* uint8_value = (uint8_t*)&incomingTcpFrame[0];
-          smartAudio.setChannel(*uint8_value);
+          // FIXME Set VTX channel
           break;
         }
         case TRIM_STEERING: {
