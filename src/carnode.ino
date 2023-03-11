@@ -4,6 +4,7 @@
 #include <EEPROM.h>
 
 #include <Servo.h>
+#include <Ticker.h>
 
 #include "SmartAudio.h"
 
@@ -17,7 +18,7 @@
 #include <NeoPixelBus.h>
 
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 9
+#define VERSION_MINOR 10
 #define VERSION_PATCH 0
 
 #define NODE_TYPE_CAR 0
@@ -32,6 +33,8 @@ const char* password = "Roulez jeunesse !";
 // Servo for steering and throttle
 Servo steeringServo;
 Servo throttleServo;
+Ticker throttleWatchdog;
+bool throttleWatchdogBone = false;
 
 // Network
 byte mac[6];
@@ -164,6 +167,16 @@ void setup() {
   delay(200);
   smartAudio.debugRx();
 
+  // Throttle command watchdog
+  throttleWatchdog.attach_ms(200, []() {
+    if(throttleWatchdogBone) {
+      throttleWatchdogBone = false;
+    } else {
+      throttleServo.writeMicroseconds(1500);
+    }
+  });
+
+  // OTA
   ota.begin(hostname);
 }
 
@@ -374,6 +387,7 @@ void setThrottle(int value) {
     value = map(value, -32768, 0, 1000, 1423);
   }
   throttleServo.writeMicroseconds(value);
+  throttleWatchdogBone = true;
 }
 
 void sendUdpPacket(const int len) {
