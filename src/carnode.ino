@@ -145,7 +145,7 @@ void setup() {
 
   // Throttle command watchdog
   throttleWatchdog.attach_ms(200, []() {
-    if(throttleWatchdogBone) {
+    if (throttleWatchdogBone) {
       throttleWatchdogBone = false;
     } else {
       throttleServo.writeMicroseconds(1500);
@@ -196,7 +196,7 @@ void searchCisServer() {
     static bool enable = false;
     enable = !enable;
     frontHeadlights.enable(enable);
-    if(enable) {
+    if (enable) {
       RgbColor color(0, 127, 0);
       strip.SetPixelColor(0, color);
     } else {
@@ -207,11 +207,11 @@ void searchCisServer() {
   }
 }
 
-#define PING            0x00
-#define VERSION         0x01
-#define VIDEO_CHANNEL   0x05
-#define TRIM_STEERING   0x20
-#define WRITE_SETTINGS  0xf0
+#define PING 0x00
+#define VERSION 0x01
+#define VIDEO_CHANNEL 0x05
+#define TRIM_STEERING 0x20
+#define WRITE_SETTINGS 0xf0
 #define INVALID_COMMAND 0xff
 
 byte incomingTcpFrame[64];

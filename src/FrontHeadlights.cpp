@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 
-FrontHeadlights::FrontHeadlights(const int pin): _pin(pin) {
+FrontHeadlights::FrontHeadlights(const int pin) : _pin(pin) {
   pinMode(_pin, OUTPUT);
 };
 

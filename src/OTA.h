@@ -53,7 +53,7 @@ public:
   };
 
   void process() {
-    for(int i=0;i<5;++i) {
+    for (int i = 0; i < 5; ++i) {
       ArduinoOTA.handle();
       delay(100);
     }
