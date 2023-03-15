@@ -11,18 +11,23 @@
 #include <IRutils.h>
 
 #include "OTA.h"
-#include "FrontHeadlights.h"
 
+#include "FrontHeadlights.h"
 #include <NeoPixelBus.h>
 
+#include <Wire.h>
+#include "Max17261.h"
+
 #define VERSION_MAJOR 0
-#define VERSION_MINOR 20
+#define VERSION_MINOR 21
 #define VERSION_PATCH 0
 
 #define NODE_TYPE_CAR 0
 
 #define SENSOR_RSSI 0x80
-#define SENSOR_IR 0x81
+#define SENSOR_IR 0x89
+#define SENSOR_BATTERY_SOC 0x82
+#define SENSOR_BATTERY_CAP 0x83
 
 // WiFi access point connection configuration
 const char* ssid = "CarInSitu";
@@ -60,6 +65,9 @@ FrontHeadlights frontHeadlights(FRONTHEADLIGHTS_PIN);
 
 // Back/top headlight(s)
 NeoPixelBus<NeoGrbFeature, NeoEsp8266Uart1800KbpsMethod> strip(LED_STRIP_COUNT, LED_STRIP_PIN);
+
+// Battery
+Max17261 max17261;
 
 void print_wifi_status(int status) {
   switch (status) {
@@ -102,6 +110,30 @@ void setup() {
 
   // EEPROM
   EEPROM.begin(sizeof(steeringTrim));
+
+  // I2C
+  Wire.begin();
+
+  // Init battery
+
+  // 800 (400mAh on 10mΩ)
+  // 900 (450mAh on 10mΩ)
+  // 1200 (600mAh on 10mΩ)
+  const uint16_t designCapacity = 900;
+  // FIXME: Tune this value according to our application
+  const uint16_t iChgTerm = 0x0640; // (250mA on 10mΩ)
+  // VE: Empty Voltage Target, during load
+  // VR: Recovery voltage
+  const uint16_t vEmpty = 0xB961; // VE/VR: 0xAA61 → 3.4V/3.88V (0xA561 → 3.3V/3.88V (default))
+  // In typical cases, if charge voltage > 4,275 then 0x8400 else 0x8000
+  // FIXME: Tune this value according to our charge voltage
+  const uint16_t modelCFG = 0x8000;
+  max17261.begin(
+    designCapacity,
+    iChgTerm,
+    vEmpty,
+    modelCFG
+  );
 
   // Init WiFi
   WiFi.disconnect();
@@ -157,6 +189,8 @@ void setup() {
 }
 
 void loop() {
+  max17261.process();
+
   if (cisClient.connected()) {
     processTcp();
     processUdp();
@@ -379,11 +413,19 @@ void sendSensorsData() {
   // Only send sensors data each 100 runs
   static int prescaler = 0;
   prescaler++;
-  prescaler %= 100;
+  prescaler %= 200;
   if (prescaler)
     return;
 
   // RSSI
   int32_t rssi = WiFi.RSSI();
   sendUdpSensorData(SENSOR_RSSI, &rssi, sizeof(rssi));
+
+  // Battery SOC (State Of Charge)
+  int16_t battery_soc = max17261.readStateOfCharge();
+  sendUdpSensorData(SENSOR_BATTERY_SOC, &battery_soc, sizeof(battery_soc));
+
+  // Battery remaining capacity
+  int16_t battery_cap = max17261.readRemainingCapacity();
+  sendUdpSensorData(SENSOR_BATTERY_CAP, &battery_cap, sizeof(battery_cap));
 }
