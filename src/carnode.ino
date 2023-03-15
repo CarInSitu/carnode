@@ -318,7 +318,7 @@ void processIr() {
 
 void sendUdpSensorData(const uint8_t type, const void* data, const int lenght) {
   outgoingPacket[0] = type;
-  memcpy(outgoingPacket + 1, data, lenght + 1);
+  memcpy(outgoingPacket + 1, data, lenght);
   sendUdpPacket(lenght + 1);
 }
 
