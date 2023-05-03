@@ -1,7 +1,7 @@
 #ifndef MAX17261_H
 #define Max17261_H
 
-#include "Max1726x.h"
+#include <Max1726x.hpp>
 
 class Max17261 {
 public:

@@ -1,4 +1,5 @@
-#include "Max17261.h"
+#include <Max17261.hpp>
+
 #include <Wire.h>
 
 #define MAX17261_STATUS_BOOT     4
